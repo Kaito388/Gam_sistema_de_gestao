@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Gam — Gestão & Mensagens Imobiliárias">
+  <title>Gam — Gestão & Mensagens Imobiliárias</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link rel="icon" href="logooo.jpeg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section id="auth-screen" class="auth-layout">
+      <aside class="auth-sidebar">
+        <div>
+          <div class="brand-small">
+            <img src="logooo.jpeg" alt="Gam" class="brand-logo">
+            <span>Gam</span>
+          </div>
+          <div class="sidebar-content">
+            <span class="eyebrow">GESTÃO IMOBILIÁRIA</span>
+            <h1>Organize seus contatos e mensagens em um só lugar.</h1>
+            <p>Um sistema simples para facilitar a rotina comercial e manter seus dados organizados.</p>
+          </div>
+        </div>
+        <div class="sidebar-features">
+          <div><i class="bx bx-check-circle"></i> Acesso protegido</div>
+          <div><i class="bx bx-cloud"></i> Dados no Google Sheets</div>
+          <div><i class="bx bx-message-rounded-dots"></i> Gestão de mensagens</div>
+        </div>
+      </aside>
+
+      <div class="auth-content">
+        <div class="auth-card">
+          <div class="tabs" role="tablist">
+            <button class="tab active" data-tab="login" type="button">Entrar</button>
+            <button class="tab" data-tab="register" type="button">Cadastrar</button>
+            <button class="tab" data-tab="forgot" type="button">Recuperar</button>
+          </div>
+
+          <form id="auth-form" class="card-inner" novalidate>
+            <div class="auth-logo">
+              <img src="logooo.jpeg" alt="Logo Gam">
+              <div>
+                <strong>Gam</strong>
+                <span>GESTÃO & MENSAGENS IMOBILIÁRIAS</span>
+              </div>
+            </div>
+
+            <div class="head">
+              <h2 id="form-title">Bem-vindo de volta</h2>
+              <p id="form-sub">Faça login para continuar</p>
+            </div>
+
+            <div id="error-box" class="alert error hidden" role="alert"></div>
+            <div id="success-box" class="alert success hidden" role="status"></div>
+
+            <div class="field">
+              <label for="email">E-mail</label>
+              <div class="input-wrap">
+                <i class="bx bxs-envelope icon"></i>
+                <input id="email" type="email" placeholder="seuemail@gmail.com" autocomplete="email" required>
+              </div>
+            </div>
+
+            <div id="senha-field" class="field">
+              <label for="senha">Senha</label>
+              <div class="input-wrap">
+                <i class="bx bxs-lock-alt icon"></i>
+                <input id="senha" type="password" placeholder="Sua senha" autocomplete="current-password" required>
+                <button id="toggle-pass" class="toggle-eye" type="button" aria-label="Mostrar senha"><i class="bx bx-show"></i></button>
+              </div>
+            </div>
+
+            <ul id="reqs" class="reqs hidden">
+              <li data-req="length">Mínimo de 8 caracteres</li>
+              <li data-req="upper">Pelo menos 1 letra maiúscula</li>
+              <li data-req="num">Pelo menos 1 número</li>
+            </ul>
+
+            <div id="confirm-field" class="field hidden">
+              <label for="confirmar">Confirmar senha</label>
+              <div class="input-wrap">
+                <i class="bx bxs-lock-alt icon"></i>
+                <input id="confirmar" type="password" placeholder="Digite a senha novamente" autocomplete="new-password">
+              </div>
+            </div>
+
+            <button id="submit-btn" class="btn-primary" type="submit">
+              <span id="btn-text">Entrar</span>
+              <i class="bx bx-right-arrow-alt"></i>
+            </button>
+
+            <div id="links" class="links"></div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section id="painel-screen" class="painel-screen hidden">
+      <header class="painel-header">
+        <div class="painel-brand">
+          <img src="logooo.jpeg" alt="Gam" class="painel-logo">
+          <span>Gam</span>
+        </div>
+        <button id="logout-btn" class="logout" type="button">
+          <i class="bx bx-log-out"></i> Sair
+        </button>
+      </header>
+      <main class="painel-main">
+        <div class="painel-card">
+          <span class="badge-ok"><i class="bx bx-check-circle"></i> Login realizado</span>
+          <h1>Bem-vindo ao Gam!</h1>
+          <p id="user-email" class="user-email"><i class="bx bx-envelope"></i></p>
+          <p class="painel-desc">Seu acesso foi autenticado. Esta é a área inicial do sistema. Você pode adicionar aqui as funções de gestão imobiliária e mensagens.</p>
+        </div>
+      </main>
+    </section>
+
+    <div id="sync-toast" class="toast hidden" role="status" aria-live="polite"></div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+</body>
+</html>

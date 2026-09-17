@@ -1,0 +1,6 @@
+-- Não é necessário criar uma tabela para o cadastro básico.
+-- O Supabase Auth guarda os usuários e protege as senhas automaticamente.
+-- Para visualizar os e-mails cadastrados, entre no painel do Supabase:
+-- Authentication > Users.
+--
+-- IMPORTANTE: não crie uma tabela pública contendo senhas.

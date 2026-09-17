@@ -1,0 +1,2291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gam - Gestão & Gerador de Mensagens Imobiliárias</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --bg-main: #050d21;
+  --bg-gradient: radial-gradient(circle at 50% 25%, #1440a0 0%, #040b1e 100%);
+  --panel-bg: rgba(10, 25, 62, 0.78);
+  --panel-border: rgba(72, 149, 255, 0.45);
+  --panel-glow: rgba(47, 123, 255, 0.22);
+
+  --cyan-bright: #2f7bff;
+  --cyan-muted: #1e6fff;
+  --blue-btn: #1554ff;
+
+  --text-light: #f0f6ff;
+  --muted: #8fb3ea;
+
+  --green: #25d366;
+  --green-glow: rgba(37, 211, 102, 0.45);
+
+  --shadow-color: rgba(0, 0, 0, 0.8);
+  --phone-bg: #0b141a;
+  --phone-msg-bg: #005c4b;
+  --phone-msg-text: #ffffff;
+}
+
+[data-theme="light"] {
+  --panel-bg: rgba(255, 255, 255, 0.85);
+  --panel-border: #94a3b8;
+  --text-light: #0f172a;
+  --muted: #475569;
+  --bg-gradient: radial-gradient(circle at top center, #e2e8f0 0%, #cbd5e1 100%);
+  --shadow-color: rgba(0, 0, 0, 0.15);
+  --phone-bg: #e5e7eb;
+  --phone-msg-bg: #ffffff;
+  --phone-msg-text: #000000;
+}
+
+* { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+  font-family: 'Poppins', system-ui, sans-serif; 
+}
+
+body { 
+  padding: 20px; 
+  background: var(--bg-gradient);
+  color: var(--text-light);
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: 100vh;
+  transition: background 0.3s ease;
+}
+
+.top-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding: 10px 20px;
+  background: rgba(13, 23, 42, 0.6);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 0 15px rgba(47, 123, 255, 0.05);
+  position: relative;
+}
+
+.menu-trigger-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--panel-border);
+  color: var(--text-light);
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+}
+
+.menu-trigger-btn:hover {
+  border-color: var(--cyan-bright);
+  box-shadow: 0 0 15px var(--panel-glow);
+  color: var(--cyan-bright);
+}
+
+.brand-center {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.brand-logo {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--cyan-bright);
+  box-shadow: 0 0 15px var(--cyan-bright);
+}
+
+.brand-center h1 {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 0 10px var(--cyan-bright);
+}
+
+.brand-center .subtitle {
+  font-size: 10px;
+  color: var(--cyan-muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.drawer-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  z-index: 99;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.drawer-overlay.active {
+  display: block;
+  opacity: 1;
+}
+
+.drawer-menu {
+  position: fixed;
+  top: 0; left: -320px; width: 320px; height: 100vh;
+  background: #08101d;
+  border-right: 1px solid var(--panel-border);
+  z-index: 100;
+  padding: 25px;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 5px 0 25px rgba(0,0,0,0.8);
+  overflow-y: auto;
+}
+
+[data-theme="light"] .drawer-menu {
+  background: #ffffff;
+}
+
+.drawer-menu.active {
+  left: 0;
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.drawer-title {
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--cyan-bright);
+}
+
+.drawer-close {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  color: var(--text-light);
+  cursor: pointer;
+}
+
+.drawer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.drawer-item {
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid transparent;
+  color: var(--text-light);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+[data-theme="light"] .drawer-item {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.drawer-item:hover, .drawer-item.active {
+  background: var(--blue-btn);
+  color: #fff;
+  border-color: var(--cyan-bright);
+}
+
+.drawer-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 20px 0 10px 0;
+  letter-spacing: 1px;
+}
+
+.main-nav {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.main-nav-btn {
+  background: rgba(15, 28, 48, 0.6);
+  border: 1px solid var(--panel-border);
+  color: var(--muted);
+  padding: 8px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.main-nav-btn:hover {
+  border-color: var(--cyan-bright);
+  color: #fff;
+  box-shadow: 0 0 12px var(--panel-glow);
+}
+
+.main-nav-btn.active {
+  background: linear-gradient(135deg, rgba(0, 162, 255, 0.4), rgba(47, 123, 255, 0.2));
+  border-color: var(--cyan-bright);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(47, 123, 255, 0.4), inset 0 0 10px rgba(47, 123, 255, 0.3);
+}
+
+.main-section {
+  display: none;
+}
+
+.main-section.active {
+  display: block;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 20px;
+  align-items: start;
+}
+
+.panel {
+  border: 1px solid var(--panel-border);
+  border-radius: 20px;
+  padding: 22px;
+  background: var(--panel-bg);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 15px 35px var(--shadow-color), inset 0 0 20px rgba(47, 123, 255, 0.03);
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+[data-theme="light"] .panel-title {
+  color: #0052D4;
+}
+
+.transaction-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 5px;
+  border-radius: 25px;
+  border: 1px solid var(--panel-border);
+}
+
+[data-theme="light"] .transaction-toggle {
+  background: #e2e8f0;
+}
+
+.trans-btn {
+  padding: 8px;
+  border: none;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--muted);
+  background: transparent;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+}
+
+.trans-btn.active {
+  background: linear-gradient(135deg, rgba(0, 162, 255, 0.5), rgba(47, 123, 255, 0.3));
+  border: 1px solid var(--cyan-bright);
+  color: #fff;
+  box-shadow: 0 0 12px var(--panel-glow);
+}
+
+.message-types {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.message-type {
+  border: 1px solid rgba(47, 123, 255, 0.15);
+  border-radius: 12px;
+  background: rgba(8, 16, 29, 0.6);
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all .3s ease;
+  text-align: center;
+  cursor: pointer;
+  color: var(--text-light);
+  min-height: 80px;
+}
+
+[data-theme="light"] .message-type {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.message-type:hover { 
+  border-color: var(--cyan-bright); 
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px var(--panel-glow);
+}
+
+.message-type.active {
+  border-color: var(--cyan-bright);
+  background: linear-gradient(135deg, rgba(0, 162, 255, 0.3), rgba(47, 123, 255, 0.15));
+  box-shadow: 0 0 20px var(--panel-glow), inset 0 0 10px rgba(47, 123, 255, 0.2);
+}
+
+[data-theme="light"] .message-type.active {
+  background: #e0f2fe;
+  border-color: var(--blue-btn);
+}
+
+.type-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(47, 123, 255, 0.1);
+  border: 1px solid var(--panel-border);
+  display: grid;
+  place-items: center;
+  color: var(--cyan-bright);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.type-title { font-size: 11px; font-weight: 600; }
+.type-desc { font-size: 10px; color: var(--muted); line-height: 1.2; display: none; }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field.full { grid-column: 1 / -1; }
+
+label { 
+  font-size: 10px; 
+  font-weight: 700; 
+  color: var(--muted); 
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+[data-theme="light"] label {
+  color: #000000 !important;
+}
+
+label span { font-weight: 400; opacity: 0.8; }
+
+input, select, textarea {
+  width: 100%;
+  border: 1px solid var(--panel-border);
+  border-radius: 20px;
+  background: rgba(4, 9, 18, 0.7);
+  color: var(--text-light);
+  padding: 10px 14px;
+  outline: none;
+  font-size: 12px;
+  transition: all .3s ease;
+}
+
+[data-theme="light"] input, 
+[data-theme="light"] select, 
+[data-theme="light"] textarea {
+  background: #ffffff;
+  border: 1.5px solid #64748b;
+  color: #000000;
+  font-weight: 600;
+}
+
+input:focus, select:focus, textarea:focus { 
+  border-color: var(--cyan-bright); 
+  box-shadow: 0 0 15px var(--panel-glow);
+  background: rgba(4, 9, 18, 0.9);
+}
+
+[data-theme="light"] input:focus, 
+[data-theme="light"] select:focus, 
+[data-theme="light"] textarea:focus {
+  border-color: var(--blue-btn);
+  box-shadow: 0 0 10px rgba(0, 102, 255, 0.2);
+}
+
+select option {
+  background: #08101d;
+  color: #fff;
+}
+
+[data-theme="light"] select option {
+  background: #ffffff;
+  color: #000;
+}
+
+.url-prefix-wrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--panel-border);
+  border-radius: 20px;
+  background: rgba(4, 9, 18, 0.7);
+  overflow: hidden;
+}
+
+[data-theme="light"] .url-prefix-wrap {
+  background: #ffffff;
+  border: 1.5px solid #64748b;
+}
+
+.url-prefix {
+  padding: 10px 0 10px 14px;
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+[data-theme="light"] .url-prefix {
+  color: #334155;
+}
+
+.url-prefix-wrap input {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding-left: 4px;
+}
+
+.bottom-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+button.btn {
+  border: 0;
+  border-radius: 25px;
+  padding: 12px 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-transform: uppercase;
+}
+
+.btn-clear { 
+  border: 1px solid var(--panel-border); 
+  background: rgba(255, 255, 255, 0.03); 
+  color: var(--text-light); 
+}
+
+.btn-clear:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--cyan-bright);
+}
+
+[data-theme="light"] .btn-clear {
+  border-color: #94a3b8;
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.btn-whatsapp { 
+  background: linear-gradient(135deg, #10b981, #059669); 
+  color: #fff; 
+  flex: 1; 
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+  border: 1px solid #34d399;
+}
+
+.btn-whatsapp:hover { 
+  transform: translateY(-2px);
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.7);
+}
+
+.btn-whatsapp:disabled { 
+  background: #1e293b; 
+  border-color: #334155;
+  color: #64748b;
+  cursor: not-allowed; 
+  opacity: .6; 
+  box-shadow: none;
+  transform: none;
+}
+
+.tabs-header {
+  display: flex;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--panel-border);
+  margin-bottom: 20px;
+}
+
+[data-theme="light"] .tabs-header {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  padding: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, rgba(0, 162, 255, 0.4), rgba(47, 123, 255, 0.2));
+  border: 1px solid var(--cyan-bright);
+  color: #fff;
+  box-shadow: 0 0 12px var(--panel-glow);
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.phone-mockup {
+  width: 100%;
+  max-width: 310px;
+  margin: 0 auto;
+  background: #000000;
+  border-radius: 38px;
+  padding: 10px;
+  border: 3px solid #1e293b;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(47, 123, 255, 0.15);
+}
+
+[data-theme="light"] .phone-mockup {
+  background: #ffffff;
+  border-color: #94a3b8;
+}
+
+.phone-screen {
+  background: var(--phone-bg);
+  border-radius: 30px;
+  padding: 16px 12px;
+  min-height: 380px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.phone-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.phone-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue-btn), var(--cyan-bright));
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.phone-contact {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-light);
+}
+
+.whatsapp-message {
+  background: var(--phone-msg-bg);
+  color: var(--phone-msg-text);
+  border-radius: 12px 0px 12px 12px;
+  padding: 10px 12px;
+  max-width: 90%;
+  margin-left: auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  font-size: 11px;
+  line-height: 1.4;
+  word-wrap: break-word;
+  font-weight: 400;
+}
+
+[data-theme="light"] .whatsapp-message {
+  border: 1px solid #cbd5e1;
+  font-weight: 500;
+  color: #000000 !important;
+}
+
+.whatsapp-meta {
+  font-size: 9px;
+  opacity: 0.7;
+  text-align: right;
+  margin-top: 4px;
+}
+
+.fav-list, .obj-list, .follow-list, .history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 580px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.card-item {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+[data-theme="light"] .card-item {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.card-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cyan-bright);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+[data-theme="light"] .card-title { color: #0052D4; }
+
+.card-body {
+  font-size: 11px;
+  color: var(--text-light);
+  line-height: 1.4;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 10px;
+  border-radius: 8px;
+  white-space: pre-wrap;
+}
+
+[data-theme="light"] .card-body {
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.btn-mini {
+  border: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-light);
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+[data-theme="light"] .btn-mini {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.btn-mini:hover {
+  background: var(--blue-btn);
+  border-color: var(--cyan-bright);
+  color: #fff;
+}
+
+.btn-mini.danger:hover {
+  background: #ef4444;
+  border-color: #f87171;
+  color: #fff;
+}
+
+.btn-copy {
+  margin-top: 15px;
+  width: 100%;
+  border: 1px solid var(--cyan-bright);
+  background: linear-gradient(135deg, rgba(0, 102, 255, 0.8), rgba(47, 123, 255, 0.6));
+  border-radius: 20px;
+  padding: 12px;
+  font-weight: 700;
+  font-size: 12px;
+  color: #fff;
+  cursor: pointer;
+  transition: all .3s ease;
+  box-shadow: 0 0 15px var(--panel-glow);
+  text-transform: uppercase;
+}
+
+.btn-copy:hover { 
+  transform: translateY(-2px);
+  box-shadow: 0 0 25px rgba(47, 123, 255, 0.5);
+}
+
+.profile-avatar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.profile-img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--cyan-bright);
+  box-shadow: 0 0 20px var(--panel-glow);
+}
+
+.badge-tag {
+  font-size: 9px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  background: rgba(47, 123, 255, 0.15);
+  color: var(--cyan-bright);
+  text-transform: uppercase;
+  font-weight: 700;
+  border: 1px solid rgba(47, 123, 255, 0.3);
+}
+
+.status {
+  margin-top: 15px;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  text-align: center;
+  display: none;
+  font-weight: 600;
+}
+
+.status.success { display: block; background: rgba(37, 211, 102, 0.15); border: 1px solid #25d366; color: #25d366; }
+.status.error { display: block; background: rgba(255, 77, 77, 0.15); border: 1px solid #ff4d4d; color: #ff4d4d; }
+.status.warning { display: block; background: rgba(255, 170, 0, 0.15); border: 1px solid #ffaa00; color: #ffaa00; }
+
+.counter-box {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+}
+
+.counter-badge {
+  background: var(--cyan-bright);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.hidden { display: none !important; }
+
+.copy-templates-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-top: 15px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.disparo-rapido-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px dashed var(--panel-border);
+}
+
+.disparo-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.disparo-num {
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--cyan-bright);
+  width: 20px;
+}
+
+@media(max-width: 950px) {
+  .top-header { flex-direction: column; gap: 15px; text-align: center; }
+  .brand-center { position: static; transform: none; }
+  .grid { grid-template-columns: 1fr; }
+  .message-types { grid-template-columns: repeat(2, 1fr); }
+  .form-grid { grid-template-columns: 1fr; }
+  .bottom-actions { flex-direction: column; }
+  .btn { width: 100%; }
+}
+</style>
+<style>
+body::before { content:""; position:fixed; inset:0; background:url("https://media.base44.com/images/public/6aa353aa40284fd0be507730/5b441f2ba_pedd.jpg") center center/cover no-repeat; opacity:0.07; pointer-events:none; z-index:-1; }
+</style>
+</head>
+<body>
+<script>
+(function () {
+  var ehBackendLocal = location.origin === 'http://localhost:3000' || location.origin === 'http://127.0.0.1:3000';
+  var ehPublicado = !/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && !location.port;
+  var API = (ehBackendLocal || ehPublicado) ? location.origin + '/api' : 'http://localhost:3000/api';
+  var real = window.localStorage;
+  var timer = null;
+  var logado = !!real.getItem('token');
+
+  function getHeaders() {
+    var t = real.getItem('token');
+    return t ? { 'Authorization': 'Bearer ' + t, 'Content-Type': 'application/json' } : null;
+  }
+
+  function enviar() {
+    var h = getHeaders();
+    if (!h || !logado) return;
+    var dados = {};
+    for (var i = 0; i < real.length; i++) {
+      var k = real.key(i);
+      if (k !== 'token') dados[k] = real.getItem(k);
+    }
+    fetch(API + '/dados', { method: 'POST', headers: h, body: JSON.stringify(dados) })
+      .catch(function () {});
+  }
+
+  function agendar() {
+    clearTimeout(timer);
+    timer = setTimeout(enviar, 1500);
+  }
+
+  var shim = {
+    getItem: function (k) { return real.getItem(k); },
+    setItem: function (k, v) { real.setItem(k, v); agendar(); },
+    removeItem: function (k) {
+      real.removeItem(k);
+      if (k === 'token') { logado = false; clearTimeout(timer); } else { agendar(); }
+    },
+    clear: function () { logado = false; clearTimeout(timer); real.clear(); },
+    key: function (i) { return real.key(i); }
+  };
+  Object.defineProperty(shim, 'length', { get: function () { return real.length; } });
+  try { Object.defineProperty(window, 'localStorage', { value: shim, configurable: true }); } catch (e) {}
+
+  var h = getHeaders();
+  if (h) {
+    try {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', API + '/dados', false);
+      xhr.setRequestHeader('Authorization', h['Authorization']);
+      xhr.send(null);
+      if (xhr.status === 200) {
+        var resp = JSON.parse(xhr.responseText);
+        var dados = resp && resp.dados ? resp.dados : {};
+        if (typeof dados === 'string') {
+           try { dados = JSON.parse(dados); } catch(e){}
+        }
+        for (var k in dados) {
+          if (k !== 'token' && real.getItem(k) === null) real.setItem(k, typeof dados[k] === 'string' ? dados[k] : JSON.stringify(dados[k]));
+        }
+      }
+    } catch (e) {}
+  }
+})();
+</script>
+
+  <div class="drawer-overlay" id="drawerOverlay" onclick="fecharDrawer()"></div>
+  
+  <aside class="drawer-menu" id="drawerMenu">
+    <div class="drawer-header">
+      <div class="drawer-title">GAM Menu</div>
+      <button class="drawer-close" onclick="fecharDrawer()">✕</button>
+    </div>
+
+    <nav class="drawer-nav">
+      <div class="drawer-section-title">Navegação Principal</div>
+      <button class="drawer-item" onclick="alternarModuloViaDrawer('mod-gerador')">Gerador de Mensagens</button>
+      <button class="drawer-item" onclick="alternarModuloViaDrawer('mod-disparo-rapido')">🚀 Disparo Rápido (2 a 5)</button>
+      <button class="drawer-item" onclick="alternarModuloViaDrawer('mod-plantao')">📞 Modo Plantão Express</button>
+      <button class="drawer-item" onclick="alternarModuloViaDrawer('mod-ads')">Gerador Social & Anúncios</button>
+      <button class="drawer-item" onclick="alternarModuloViaDrawer('mod-objecoes')">Biblioteca de Objeções</button>
+      <button class="drawer-item" onclick="alternarModuloViaDrawer('mod-posvendas')">Pós-Vendas & Relacionamento</button>
+
+      <div class="drawer-section-title">Gestão & Ferramentas</div>
+      <button class="drawer-item" onclick="alternarModuloViaDrawer('mod-historico')">Histórico de Envios</button>
+      <button class="drawer-item" onclick="alternarModuloViaDrawer('mod-followup')">Agendador de Follow-ups</button>
+      <button class="drawer-item" onclick="alternarModuloViaDrawer('mod-perfil')">👤 Meu Perfil</button>
+      <button class="drawer-item" onclick="alternarModuloViaDrawer('mod-config')">⚙️ Configurações</button>
+    </nav>
+  </aside>
+
+  <header class="top-header">
+    <button class="menu-trigger-btn" onclick="abrirDrawer()">
+      ☰ <span style="font-size: 12px; font-weight: 700;">MENU</span>
+    </button>
+    
+    <div class="brand-center">
+      <img src="logooo.jpeg" alt="Gam Logo" class="brand-logo">
+      <div>
+        <h1>Gam</h1>
+        <div class="subtitle">Plataforma Profissional</div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="main-nav">
+    <button class="main-nav-btn active" id="nav-mod-gerador" onclick="navegarModulo('mod-gerador')">Gerador</button>
+    <button class="main-nav-btn" id="nav-mod-disparo-rapido" onclick="navegarModulo('mod-disparo-rapido')">🚀 Disparo Rápido</button>
+    <button class="main-nav-btn" id="nav-mod-plantao" onclick="navegarModulo('mod-plantao')">📞 Modo Plantão</button>
+    <button class="main-nav-btn" id="nav-mod-ads" onclick="navegarModulo('mod-ads')">Gerador Social</button>
+    <button class="main-nav-btn" id="nav-mod-objecoes" onclick="navegarModulo('mod-objecoes')">Objeções</button>
+    <button class="main-nav-btn" id="nav-mod-posvendas" onclick="navegarModulo('mod-posvendas')">Pós-Vendas</button>
+    <button class="main-nav-btn" id="nav-mod-followup" onclick="navegarModulo('mod-followup')">Follow-up</button>
+  </nav>
+
+  <section id="mod-gerador" class="main-section active">
+    <main class="grid">
+      <div>
+        <section class="panel">
+          
+          <div class="transaction-toggle">
+            <button class="trans-btn active" id="btnTransVenda" onclick="definirModoTransacao('venda')">🏷️ Venda</button>
+            <button class="trans-btn" id="btnTransAluguel" onclick="definirModoTransacao('aluguel')">🔑 Aluguel</button>
+          </div>
+
+          <div class="panel-title">✉️ Tipo de Mensagem</div>
+
+          <div class="message-types">
+            <button class="message-type active" onclick="selecionarTipo(1)" id="tipo1">
+              <div class="type-icon">👤</div>
+              <div>
+                <div class="type-title">Novo Lead</div>
+                <div class="type-desc">Primeiro contato da lista.</div>
+              </div>
+            </button>
+
+            <button class="message-type" onclick="selecionarTipo(2)" id="tipo2">
+              <div class="type-icon">↻</div>
+              <div>
+                <div class="type-title">Lead Antigo</div>
+                <div class="type-desc">Retomar contato parado.</div>
+              </div>
+            </button>
+
+            <button class="message-type" onclick="selecionarTipo(3)" id="tipo3">
+              <div class="type-icon">🔑</div>
+              <div>
+                <div class="type-title">Novo Agenciamento</div>
+                <div class="type-desc">Captar com proprietário.</div>
+              </div>
+            </button>
+
+            <button class="message-type" onclick="selecionarTipo(4)" id="tipo4">
+              <div class="type-icon">⚙</div>
+              <div>
+                <div class="type-title">Atualização de Agenciamento</div>
+                <div class="type-desc">Confirmar dados da lista.</div>
+              </div>
+            </button>
+
+            <button class="message-type" onclick="selecionarTipo(5)" id="tipo5">
+              <div class="type-icon">🎉</div>
+              <div>
+                <div class="type-title">Datas Festivas</div>
+                <div class="type-desc">Aniversário e Festas.</div>
+              </div>
+            </button>
+
+            <button class="message-type" onclick="selecionarTipo(6)" id="tipo6">
+              <div class="type-icon">🤝</div>
+              <div>
+                <div class="type-title">Falar com Corretor / Agenciador</div>
+                <div class="type-desc">Parceria / Visita a imóvel agenciado.</div>
+              </div>
+            </button>
+          </div>
+
+          <div class="counter-box">
+            <span>Envios do Modelo Atual: <strong id="envioCountDisplay">0 / 5</strong></span>
+            <span class="counter-badge" id="variacaoBadge">Modelo 1</span>
+          </div>
+
+          <div class="panel-title">Dados do Atendimento</div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label for="tomVoz">Tom de Voz (15 Opções)</label>
+              <select id="tomVoz" onchange="atualizarMensagem()">
+                <option value="0">1. Padrão Equilibrado</option>
+                <option value="1">2. Formal & Executivo</option>
+                <option value="2">3. Descontraído & Amigável</option>
+                <option value="3">4. Urgente (Gatilho de Escassez)</option>
+                <option value="4">5. Direto & Objetivo</option>
+                <option value="5">6. Consultor Especialista VIP</option>
+                <option value="6">7. Acolhedor & Empático</option>
+                <option value="7">8. Entusiasta & Energético</option>
+                <option value="8">9. Persuasivo & Focado em Valor</option>
+                <option value="9">10. Minimalista & Sucinto</option>
+                <option value="10">11. Premium & Exclusivo</option>
+                <option value="11">12. Curioso & Provocativo</option>
+                <option value="12">13. Atencioso & Cuidadoso</option>
+                <option value="13">14. Institucional & Corporativo</option>
+                <option value="14">15. Cordial & Cavalheiro</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="variacaoMsg">Variação (20 Opções)</label>
+              <select id="variacaoMsg" onchange="aoMudarManualVariacao()">
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="saudacao">Saudação</label>
+              <select id="saudacao" onchange="atualizarMensagem()">
+                <option>Olá</option>
+                <option>Bom dia</option>
+                <option>Boa tarde</option>
+                <option>Boa noite</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="nomeCorretor">Seu nome <span>(Corretor)</span></label>
+              <input id="nomeCorretor" type="text" placeholder="Ex: Carlos Silva" oninput="atualizarMensagem()">
+            </div>
+
+            <div class="field">
+              <label for="codigoCorretor">Cód. Corretor</label>
+              <input id="codigoCorretor" type="text" placeholder="Ex: 1234" oninput="sincronizarCodigosAuxiliadora()">
+            </div>
+
+            <div class="field dynamic-field tipo1-campo tipo6-campo">
+              <label for="imovel">Cód. Imóvel</label>
+              <input id="imovel" type="text" placeholder="Ex: 5678" oninput="sincronizarCodigosAuxiliadora()">
+            </div>
+
+            <div class="field">
+              <label for="nome" id="labelNome">Nome do cliente / corretor</label>
+              <input id="nome" type="text" placeholder="Ex: João Silva" oninput="atualizarMensagem()">
+            </div>
+
+            <div class="field">
+              <label for="telefone">WhatsApp</label>
+              <input id="telefone" type="tel" placeholder="(51) 99999-9999" oninput="mascaraTelefone(this); atualizarMensagem()">
+            </div>
+
+            <div class="field full">
+              <label for="urlImovel">Link do Imóvel <span>(Sufixo / Link direto)</span></label>
+              <div class="url-prefix-wrap">
+                <span class="url-prefix">https://www.auxiliadorapredial.com.br/selecionados/</span>
+                <input id="urlImovel" type="text" placeholder="CódCorretor/CódImóvel" oninput="aoDigitarSufixoUrl()">
+              </div>
+            </div>
+
+            <div class="field full dynamic-field tipo1-campo tipo6-campo">
+              <label for="endereco">Endereço/Bairro do imóvel</label>
+              <input id="endereco" type="text" placeholder="Ex: Rua das Flores, Centro" oninput="atualizarMensagem()">
+            </div>
+
+            <div class="field full dynamic-field tipo2-campo hidden">
+              <label for="observacaoAntigo">Preferência/Obs. <span>(opcional)</span></label>
+              <input id="observacaoAntigo" type="text" placeholder="Ex: Apto 2 dorms no Centro" oninput="atualizarMensagem()">
+            </div>
+
+            <div class="field full dynamic-field tipo3-campo hidden">
+              <label for="enderecoProprietario">Endereço/Região <span>(opcional)</span></label>
+              <input id="enderecoProprietario" type="text" placeholder="Ex: Bairro Petrópolis" oninput="atualizarMensagem()">
+            </div>
+
+            <div class="field full dynamic-field tipo4-campo hidden">
+              <label for="dadosAtualizacao">Informações a atualizar</label>
+              <input id="dadosAtualizacao" type="text" placeholder="Ex: telefone, e-mail, faixa de valor" oninput="atualizarMensagem()">
+            </div>
+
+            <div class="field full dynamic-field tipo5-campo hidden">
+              <label for="dataFestiva">Ocasião Especial</label>
+              <select id="dataFestiva" onchange="atualizarMensagem()">
+                <option value="aniversario">🎂 Aniversário do Cliente</option>
+                <option value="natal">🎄 Feliz Natal</option>
+                <option value="anonovo">🎆 Ano Novo</option>
+                <option value="compra">🏠 Aniversário do Imóvel</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="bottom-actions">
+            <button class="btn btn-clear" onclick="limparCampos()">Limpar</button>
+            <button class="btn btn-whatsapp" id="btnWhatsApp" onclick="abrirWhatsApp()" disabled>Enviar pelo WhatsApp</button>
+          </div>
+
+          <div id="status" class="status"></div>
+        </section>
+      </div>
+
+      <section class="panel">
+        <div class="tabs-header">
+          <button class="tab-btn active" onclick="mudarAba(event, 'tab-preview')">Visualizador</button>
+          <button class="tab-btn" onclick="mudarAba(event, 'tab-favoritos')">⭐ Favoritos</button>
+        </div>
+
+        <div id="tab-preview" class="tab-content active">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="font-size: 11px; font-weight: 700; color: var(--muted);">PRÉ-VISUALIZAÇÃO DA MENSAGEM</span>
+          </div>
+
+          <div class="phone-mockup">
+            <div class="phone-screen">
+              <div class="phone-header">
+                <div class="phone-avatar" id="avatarLetra">C</div>
+                <div>
+                  <div class="phone-contact" id="contactName">Cliente</div>
+                  <div style="font-size: 9px; color: var(--muted);">Online</div>
+                </div>
+              </div>
+              <div class="whatsapp-message">
+                <div id="previewText">Preencha os campos ao lado para gerar a mensagem.</div>
+                <div class="whatsapp-meta">10:30 ✓✓</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-copy" onclick="copiarMensagem()">Copiar mensagem</button>
+        </div>
+
+        <div id="tab-favoritos" class="tab-content">
+          <div class="panel-title">⭐ Minhas Frases & Modelos</div>
+          
+          <div class="fav-list" id="favList"></div>
+
+          <div style="border-top: 1px solid var(--panel-border); padding-top: 15px; margin-top: 15px;">
+            <label style="font-size: 11px; font-weight: 700; margin-bottom: 8px; display: block;">Criar Nova Mensagem Favorita:</label>
+            <input id="nomeModeloFav" type="text" placeholder="Título (ex: Apresentação Luxo)" style="margin-bottom: 8px;">
+            <textarea id="textoModeloFav" rows="3" placeholder="Escreva aqui seu texto personalizado..." style="margin-bottom: 8px;"></textarea>
+            <button class="btn-copy" onclick="salvarModeloFavorito()" style="margin-top: 0;"> Salvar Modelo</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </section>
+
+  <section id="mod-disparo-rapido" class="main-section">
+    <main class="grid">
+      <div>
+        <section class="panel">
+          <div class="panel-title">🚀 Disparo Rápido em Massa (2 a 5 Mensagens)</div>
+          <p style="font-size: 12px; color: var(--muted); margin-bottom: 15px;">
+            Preencha os dados dos clientes para disparar automaticamente mensagens para até 5 contatos ao mesmo tempo.
+          </p>
+
+          <div class="form-grid">
+            <div class="field full">
+              <label for="disparoTipo">Tipo da Mensagem de Disparo</label>
+              <select id="disparoTipo">
+                <option value="1">1. Novo Lead (Apresentação)</option>
+                <option value="2">2. Reativação de Lead Antigo</option>
+                <option value="3">3. Captação / Proprietário</option>
+              </select>
+            </div>
+
+            <div class="field full">
+              <label for="disparoMensagemBase">Texto Padrão / Modelo da Mensagem</label>
+              <textarea id="disparoMensagemBase" rows="3" placeholder="Ex: Olá {NOME}! Sou o corretor da Auxiliadora Predial. Vi seu interesse no imóvel. Como posso te ajudar hoje?"></textarea>
+              <span style="font-size: 10px; color: var(--muted); margin-top: 2px;">Dica: Use <strong>{NOME}</strong> onde deseja que o nome de cada pessoa apareça automaticamente.</span>
+            </div>
+
+            <div class="field full">
+              <label>Pessoas para o Disparo (Mínimo 2, Máximo 5)</label>
+              <div class="disparo-rapido-container">
+                <div class="disparo-item">
+                  <span class="disparo-num">1.</span>
+                  <input type="text" id="dispNome1" placeholder="Nome da pessoa 1">
+                  <input type="tel" id="dispTel1" placeholder="WhatsApp (DDD + N°)" oninput="mascaraTelefone(this)">
+                </div>
+                <div class="disparo-item">
+                  <span class="disparo-num">2.</span>
+                  <input type="text" id="dispNome2" placeholder="Nome da pessoa 2">
+                  <input type="tel" id="dispTel2" placeholder="WhatsApp (DDD + N°)" oninput="mascaraTelefone(this)">
+                </div>
+                <div class="disparo-item">
+                  <span class="disparo-num">3.</span>
+                  <input type="text" id="dispNome3" placeholder="Nome da pessoa 3 (Opcional)">
+                  <input type="tel" id="dispTel3" placeholder="WhatsApp (DDD + N°)" oninput="mascaraTelefone(this)">
+                </div>
+                <div class="disparo-item">
+                  <span class="disparo-num">4.</span>
+                  <input type="text" id="dispNome4" placeholder="Nome da pessoa 4 (Opcional)">
+                  <input type="tel" id="dispTel4" placeholder="WhatsApp (DDD + N°)" oninput="mascaraTelefone(this)">
+                </div>
+                <div class="disparo-item">
+                  <span class="disparo-num">5.</span>
+                  <input type="text" id="dispNome5" placeholder="Nome da pessoa 5 (Opcional)">
+                  <input type="tel" id="dispTel5" placeholder="WhatsApp (DDD + N°)" oninput="mascaraTelefone(this)">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bottom-actions" style="margin-top: 20px;">
+            <button class="btn btn-whatsapp" onclick="executarDisparoRapido()">
+              ⚡ Disparar Mensagens Agora
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <section class="panel">
+        <div class="panel-title">ℹ️ Instruções do Disparo</div>
+        <p style="font-size: 11px; color: var(--muted); line-height: 1.5;">
+          • Preencha pelo menos <strong>2 pessoas</strong> (mínimo) até no máximo <strong>5 pessoas</strong>.<br><br>
+          • Ao clicar em disparar, o aplicativo abrirá abas individuais do WhatsApp com a mensagem personalizada contendo o nome correto de cada cliente.<br><br>
+          • Certifique-se de permitir que o seu navegador abra janelas/abas pop-ups.
+        </p>
+      </section>
+    </main>
+  </section>
+
+  <section id="mod-plantao" class="main-section">
+    <main class="grid">
+      <div>
+        <section class="panel">
+          <div class="panel-title">⚡ Modo Plantão - Formulário Express (10s)</div>
+          <p style="font-size: 12px; color: var(--muted); margin-bottom: 15px;">
+            Preencha os dados em tempo real enquanto fala no telefone e envie o WhatsApp na hora de desligar!
+          </p>
+
+          <div class="form-grid">
+            <div class="field full">
+              <label for="plantaoNome">1. Nome do Cliente</label>
+              <input id="plantaoNome" type="text" placeholder="Ex: Roberto Carlos" oninput="atualizarPlantao()">
+            </div>
+
+            <div class="field full">
+              <label for="plantaoTel">2. WhatsApp / Telefone</label>
+              <input id="plantaoTel" type="tel" placeholder="(51) 99999-9999" oninput="mascaraTelefone(this); atualizarPlantao()">
+            </div>
+
+            <div class="field">
+              <label for="plantaoInteresse">3. Interesse Principal</label>
+              <select id="plantaoInteresse" onchange="atualizarPlantao()">
+                <option value="Comprar">Comprar</option>
+                <option value="Alugar">Alugar</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="plantaoTom">Tom de Voz</label>
+              <select id="plantaoTom" onchange="atualizarPlantao()">
+                <option value="0">1. Padrão & Amigável</option>
+                <option value="1">2. Formal & Executivo</option>
+                <option value="2">3. Descontraído & Leve</option>
+                <option value="3">4. Urgente & Escassez</option>
+                <option value="4">5. Direto ao Ponto</option>
+              </select>
+            </div>
+
+            <div class="field full">
+              <label for="plantaoVariacao">Modelo / Variação de Texto</label>
+              <select id="plantaoVariacao" onchange="atualizarPlantao()">
+                <option value="1">Variação 1 - Padrão "Saindo da Ligação"</option>
+                <option value="2">Variação 2 - Foco no Salvar Contato</option>
+                <option value="3">Variação 3 - Foco em Agendamento Rápido</option>
+                <option value="4">Variação 4 - Executivo e Direto</option>
+                <option value="5">Variação 5 - Acolhedor e VIP</option>
+              </select>
+            </div>
+
+            <div class="field full">
+              <label for="plantaoImovel">4. Código do Imóvel ou Tipo/Bairro Desejado</label>
+              <input id="plantaoImovel" type="text" placeholder="Ex: Cód 12345 ou Apto 2 dorms no Moinhos" oninput="atualizarPlantao()">
+            </div>
+          </div>
+
+          <div class="bottom-actions" style="margin-top: 20px;">
+            <button class="btn btn-whatsapp" id="btnWhatsAppPlantao" onclick="enviarWhatsAppPlantao()">
+              📲 Enviar Apresentação de Plantão
+            </button>
+          </div>
+
+          <div style="border-top: 1px solid var(--panel-border); margin-top: 20px; padding-top: 15px;">
+            <div class="panel-title" style="margin-bottom: 10px; font-size: 11px;">⏱️ Agendador Automático "Follow-Up da Segunda Chance"</div>
+            <p style="font-size: 10px; color: var(--muted); margin-bottom: 12px;">
+              Cliente disse "estou dirigindo, me chama depois"? Clique abaixo para agendar o lembrete instantaneamente:
+            </p>
+
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn-mini" onclick="agendarFollowupPlantao(1)">⏰ Lembrar em 1 Hora</button>
+              <button class="btn-mini" onclick="agendarFollowupPlantao(3)">⏰ Lembrar em 3 Horas</button>
+              <button class="btn-mini" onclick="agendarFollowupPlantao('fim')">🌙 Lembrar no Fim do Plantão (18:00)</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="panel">
+        <div class="panel-title">📱 Pré-Visualização Saindo da Ligação</div>
+        
+        <div class="phone-mockup">
+          <div class="phone-screen">
+            <div class="phone-header">
+              <div class="phone-avatar" id="avatarLetraPlantao">P</div>
+              <div>
+                <div class="phone-contact" id="contactNamePlantao">Cliente Plantão</div>
+                <div style="font-size: 9px; color: var(--muted);">Online</div>
+              </div>
+            </div>
+            <div class="whatsapp-message">
+              <div id="previewTextPlantao">Preencha os campos ao lado...</div>
+              <div class="whatsapp-meta">Agora ✓✓</div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-copy" onclick="copiarMensagemPlantao()">Copiar mensagem de plantão</button>
+      </section>
+    </main>
+  </section>
+
+  <section id="mod-ads" class="main-section">
+    <main class="grid">
+      <div class="panel">
+        <div class="panel-title">Gerador Social & Copys Imobiliárias</div>
+        <p style="font-size: 12px; color: var(--muted); margin-bottom: 15px;">Gere textos completos, persuasivos e prontos para publicar no Instagram, Facebook Marketplace e Portais.</p>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="adTipo">Tipo de Imóvel</label>
+            <input type="text" id="adTipo" placeholder="Ex: Apartamento, Casa em Condomínio">
+          </div>
+          <div class="field">
+            <label for="adBairro">Bairro / Cidade</label>
+            <input type="text" id="adBairro" placeholder="Ex: Moinhos de Vento, Porto Alegre">
+          </div>
+          <div class="field">
+            <label for="adDorms">Dormitórios & Suítes</label>
+            <input type="text" id="adDorms" placeholder="Ex: 3 suítes + 2 vagas cobertas">
+          </div>
+          <div class="field">
+            <label for="adValor">Valor R$</label>
+            <input type="text" id="adValor" placeholder="Ex: R$ 850.000 ou R$ 3.800/mês">
+          </div>
+          <div class="field full">
+            <label for="adDiferenciais">Diferenciais e Infraestrutura</label>
+            <input type="text" id="adDiferenciais" placeholder="Ex: Varanda gourmet, vista panorâmica, piscina aquecida, portaria 24h">
+          </div>
+          <div class="field full">
+            <label for="adContato">Contato / WhatsApp</label>
+            <input type="text" id="adContato" placeholder="Ex: (51) 99999-9999">
+          </div>
+        </div>
+
+        <button class="btn-copy" onclick="gerarCopysAnuncio()" style="margin-top: 20px;">⚡ Gerar 20 Opções de Copys Completas</button>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Modelos Gerados para Postar</div>
+        <div id="copyResultsContainer" class="copy-templates-grid">
+          <div style="font-size: 12px; color: var(--muted); text-align: center; padding: 30px;">Preencha os dados ao lado e clique no botão para gerar 20 variações exclusivas.</div>
+        </div>
+      </div>
+    </main>
+  </section>
+
+  <section id="mod-objecoes" class="main-section">
+    <div class="panel">
+      <div class="panel-title">Biblioteca de Contorno de Objeções (Mais de 20 Opções)</div>
+      <p style="font-size: 12px; color: var(--muted); margin-bottom: 15px;">Scripts estratégicos prontos para responder qualquer hesitação do cliente instantaneamente.</p>
+
+      <div class="field" style="margin-bottom: 15px;">
+        <input type="text" id="buscaObj" placeholder="Pesquisar objeção (ex: comissão, caro, esposa, juros, avaliar)..." oninput="filtrarObjecoes()">
+      </div>
+
+      <div class="obj-list" id="objList"></div>
+    </div>
+  </section>
+
+  <section id="mod-posvendas" class="main-section">
+    <main class="grid">
+      <div class="panel">
+        <div class="panel-title">Relacionamento & Pós-Venda</div>
+        <p style="font-size: 12px; color: var(--muted); margin-bottom: 15px;">Mensagens para manter a carteira aquecida após o fechamento do negócio.</p>
+
+        <div class="form-grid">
+          <div class="field full">
+            <label for="posTipo">Tipo de Pós-Venda</label>
+            <select id="posTipo" onchange="atualizarPosVendas()">
+              <option value="agradecimento">Agradecimento pela Confiança (Fechamento)</option>
+              <option value="posEntrega">Acompanhamento de Mudança / Entrega das Chaves</option>
+              <option value="indicacao">Pedido de Indicação de Amigos/Familiares</option>
+              <option value="aniversarioImovel">Parabéns pelo Aniversário de 1 Ano no Imóvel</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="posCliente">Nome do Cliente</label>
+            <input type="text" id="posCliente" placeholder="Ex: Roberto Santos" oninput="atualizarPosVendas()">
+          </div>
+
+          <div class="field">
+            <label for="posTel">WhatsApp</label>
+            <input type="tel" id="posTel" placeholder="(51) 99999-9999" oninput="mascaraTelefone(this); atualizarPosVendas()">
+          </div>
+
+          <div class="field full">
+            <label for="posTom">Tom de Voz</label>
+            <select id="posTom" onchange="atualizarPosVendas()">
+              <option value="padrao">Amigável & Profissional</option>
+              <option value="formal">Executivo & Formal</option>
+              <option value="descontraido">Muito Caloroso & Festivo</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn-copy" onclick="enviarPosVendaWhatsApp()" style="margin-top: 20px;">Enviar Pós-Venda via WhatsApp</button>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Visualização do Pós-Venda</div>
+        <div class="card-item">
+          <div class="card-body" id="posPreviewText">Preencha os dados ao lado...</div>
+        </div>
+      </div>
+    </main>
+  </section>
+
+  <section id="mod-followup" class="main-section">
+    <main class="grid">
+      <div class="panel">
+        <div class="panel-title">Agendar Lembrete de Retorno</div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="followCliente">Nome do Cliente</label>
+            <input type="text" id="followCliente" placeholder="Ex: João da Silva">
+          </div>
+          <div class="field">
+            <label for="followTel">WhatsApp</label>
+            <input type="tel" id="followTel" placeholder="(51) 99999-9999" oninput="mascaraTelefone(this)">
+          </div>
+          <div class="field">
+            <label for="followData">Data</label>
+            <input type="date" id="followData">
+          </div>
+          <div class="field">
+            <label for="followHora">Hora</label>
+            <input type="time" id="followHora" value="09:00">
+          </div>
+          <div class="field full">
+            <label for="followNotas">Observações</label>
+            <textarea id="followNotas" rows="3" placeholder="Ex: Retomar proposta da casa no condomínio."></textarea>
+          </div>
+        </div>
+        <button class="btn-copy" onclick="solicitarPermissaoEAgendar()" style="margin-top: 15px;">Salvar Lembrete Real-Time</button>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Próximos Acompanhamentos</div>
+        <div class="follow-list" id="followList"></div>
+      </div>
+    </main>
+  </section>
+
+  <section id="mod-historico" class="main-section">
+    <div class="panel">
+      <div class="panel-title">Histórico dos Envios Registrados</div>
+      <p style="font-size: 12px; color: var(--muted); margin-bottom: 15px;">Registro automático das pessoas que você já contatou pelo app.</p>
+
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </section>
+
+  <section id="mod-perfil" class="main-section">
+    <div class="panel" style="max-width: 600px; margin: 0 auto;">
+      <div class="panel-title">👤 Perfil do Corretor</div>
+      
+      <div class="profile-avatar-wrap">
+        <img src="logooo.jpeg" alt="Foto Perfil" id="profileImgPreview" class="profile-img">
+        <input type="file" id="inputFotoPerfil" accept="image/*" style="display: none;" onchange="carregarFotoPerfil(event)">
+        <button class="btn-mini" onclick="document.getElementById('inputFotoPerfil').click()">📷 Alterar Foto</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="field full">
+          <label for="perfilNome">Nome Completo</label>
+          <input type="text" id="perfilNome" placeholder="Seu Nome">
+        </div>
+
+        <div class="field full">
+          <label for="perfilEmail">E-mail Profissional (Gmail)</label>
+          <input type="email" id="perfilEmail" placeholder="exemplo@gmail.com" oninput="processarEmailParaNome(this.value)">
+        </div>
+
+        <div class="field full">
+          <label for="perfilSenha">Senha/PIN de Acesso</label>
+          <input type="password" id="perfilSenha" placeholder="••••••••">
+        </div>
+      </div>
+
+      <button class="btn-copy" onclick="salvarPerfil()" style="margin-top: 20px;"> Salvar Perfil</button>
+    </div>
+  </section>
+
+  <section id="mod-config" class="main-section">
+    <div class="panel" style="max-width: 600px; margin: 0 auto;">
+      <div class="panel-title">⚙️ Configurações do Sistema</div>
+
+      <div class="form-grid">
+        <div class="field full">
+          <label>Tema de Visualização</label>
+          <button class="btn-copy" style="margin-top: 0;" onclick="alternarTema()" id="btnConfigTheme">☀️ Mudar para Modo Claro / Escuro</button>
+        </div>
+
+        <div class="field full">
+          <label for="cfgSaudacaoPadrao">Saudação Padrão</label>
+          <select id="cfgSaudacaoPadrao" onchange="salvarConfiguracoes()">
+            <option value="Olá">Olá</option>
+            <option value="Bom dia">Bom dia</option>
+            <option value="Boa tarde">Boa tarde</option>
+          </select>
+        </div>
+
+        <div class="field full">
+          <label for="cfgDDD">DDD Padrão da Região</label>
+          <input type="text" id="cfgDDD" placeholder="Ex: 51" onchange="salvarConfiguracoes()">
+        </div>
+      </div>
+
+      <div style="margin-top: 25px; border-top: 1px solid var(--panel-border); padding-top: 15px;">
+        <button class="btn-mini danger" onclick="limparHistoricoECACHE()">⚠️ Limpar Todo o Histórico e Dados Salvos</button>
+      </div>
+    </div>
+  </section>
+
+<script>
+let tipoSelecionado = 1;
+let modoTransacao = 'venda';
+let mensagemAtual = "";
+let mensagemPlantaoAtual = "";
+const BASE_URL_AUXILIADORA = "https://www.auxiliadorapredial.com.br/selecionados/";
+
+let envioContador = parseInt(localStorage.getItem('gam_envio_count')) || 0;
+
+let favoritos = JSON.parse(localStorage.getItem('gam_favoritos')) || [
+  { id: 1, titulo: "Lembrete de Visita", texto: "Olá! Confirmando nossa visita ao imóvel amanhã. Qualquer dúvida estou à disposição!" },
+  { id: 2, titulo: "Envio de Documentos", texto: "Olá! Para darmos andamento, precisaria do envio da sua documentação básica. Posso te enviar a lista?" }
+];
+
+let objecoesBase = [
+  { id: 1, titulo: "A comissão está muito alta", resposta: "Compreendo perfeitamente sua atenção aos custos. A comissão não é apenas um valor decorrente da venda, mas o investimento garantido em divulgação profissional, segurança jurídica e filtragem de compradores qualificados para que seu imóvel seja negociado no maior valor de mercado." },
+  { id: 2, titulo: "O imóvel está muito caro", resposta: "Entendo sua análise! Esse valor reflete as benfeitorias da propriedade e o histórico de valorização do bairro. Vamos agendar uma visita sem compromisso para você avaliar de perto os acabamentos e depois alinhamos uma proposta razoável?" },
+  { id: 3, titulo: "Preciso falar com minha esposa / marido", resposta: "Com certeza, essa é uma decisão familiar fundamental! O que acha de agendarmos um horário no final do dia ou no final de semana para que eu apresente os detalhes aos dois juntos?" },
+  { id: 4, titulo: "Vou pensar e te aviso depois", resposta: "Perfeito! Para que eu possa te ajudar na reflexão, me conta: existe algum detalhe específico do imóvel ou da negociação que te deixou em dúvida?" },
+  { id: 5, titulo: "Vou esperar os juros / mercado baixarem", resposta: "É um ponto coerente, mas lembre-se: quando os juros caem, os preços dos imóveis sobem rapidamente devido à alta demanda. Comprar agora permite garantir um preço melhor e refinanciar no futuro a uma taxa mais baixa." }
+];
+
+let historicoEnvios = JSON.parse(localStorage.getItem('gam_historico')) || [];
+let listaFollowup = JSON.parse(localStorage.getItem('gam_followups')) || [];
+let perfilCorretor = JSON.parse(localStorage.getItem('gam_perfil')) || { nome: "", email: "kaua.figueiro1901@gmail.com", senha: "", foto: "logooo.jpeg" };
+
+function mascaraTelefone(input) {
+  let v = input.value.replace(/\D/g, "");
+  v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+  v = v.replace(/(\d)(\d{4})$/, "$1-$2");
+  input.value = v;
+}
+
+function extrairNomeDoGmail(email) {
+  if (!email || !email.includes("@")) return "USUÁRIO";
+  let parteInicial = email.split("@")[0];
+  let nomeLimpo = parteInicial.split(".")[0].split("_")[0].replace(/\d+/g, '').toLowerCase();
+  
+  if (nomeLimpo === "kaua") {
+    return "KAUÃ";
+  }
+  return nomeLimpo ? nomeLimpo.charAt(0).toUpperCase() + nomeLimpo.slice(1) : "USUÁRIO";
+}
+
+function processarEmailParaNome(email) {
+  const nomeExtraido = extrairNomeDoGmail(email);
+  document.getElementById("perfilNome").value = nomeExtraido;
+  atualizarInterfacePerfil(nomeExtraido, perfilCorretor.foto);
+}
+
+function atualizarInterfacePerfil(nome, foto) {
+  const nomeExibir = nome || extrairNomeDoGmail(perfilCorretor.email);
+  const fotoExibir = foto || "logooo.jpeg";
+
+  const elemImg = document.getElementById("profileImgPreview");
+  const elemCorretor = document.getElementById("nomeCorretor");
+  if(elemImg) elemImg.src = fotoExibir;
+  if(elemCorretor) elemCorretor.value = nomeExibir;
+}
+
+const templates = {
+  1: [
+    (s, n, a, i, e, l, t) => `${s}, ${n}! Como vai? Espero que esteja tendo um ótimo dia.\n\n${a}. Notei que você demonstrou interesse em um de nossos imóveis e gostaria de te dar as boas-vindas e me colocar à sua total disposição.${i || e ? `\n\nReferente ao imóvel ${i ? 'cód. ' + i : ''} ${e ? 'localizado na ' + e : ''}.` : ''}${l ? '\n\nPara facilitar, você pode conferir todas as fotos, plantas e detalhes do anúncio aqui: ' + l : ''}\n\nEstou acompanhando este imóvel de perto e posso te passar todos os detalhes sobre a negociação de ${t}, valores de condomínio e IPTU, além de agendar uma visita sem compromisso. Qual seria o melhor horário para conversarmos rapidamente?`,
+    (s, n, a, i, e, l, t) => `${s}, ${n}! Tudo bem por aí?\n\n${a}. Recebi sua solicitação de informações e faço questão de te atender com toda a atenção e prioridade.${i || e ? ` Vi que você pesquisou o imóvel ${i ? '#' + i : ''} ${e ? 'na ' + e : ''}.` : ''}${l ? '\n\nVocê pode reexaminar a ficha completa e as fotos do imóvel através deste link: ' + l : ''}\n\nPara que eu possa te ajudar de forma certeira na busca por ${t}, gostaria de saber se este perfil atende exatamente ao que você procura ou se gostaria de ver outras opções semelhantes na região. O que acha de batermos um papo rápido?`
+  ],
+  2: [
+    (s, n, a, obs, l, t) => `${s}, ${n}! Tudo bem? Espero que sim.\n\n${a}. Estava revisando meu histórico de atendimentos e lembrei do nosso contato anterior sobre busca de imóveis.${obs ? ` Lembro que suas preferências incluíam: ${obs}.` : ''}${l ? '\n\nSeparamos este destaque recente para você: ' + l : ''}\n\nGostaria de saber se você ainda tem planos de avançar na ${t === 'venda' ? 'compra' : 'locação'} de um imóvel ou se suas necessidades mudaram. Chegaram novas oportunidades excelentes na região! Posso te enviar algumas fotos?`
+  ],
+  3: [
+    (s, n, a, e, f, l) => `${s}, ${n}! Como vai? Espero que esteja bem.\n\n${a}. Estou entrando em contato pois temos uma demanda ativa de clientes qualificados buscando imóveis para ${f}${e ? ' especificamente na região de ' + e : ''}.\n\nSe você tem interesse em vender ou alugar sua propriedade com agilidade e total suporte jurídico, gostaria de apresentar nossa proposta de trabalho.${l ? '\n\nConheça mais sobre nossa estrutura aqui: ' + l : ''}\n\nPodemos agendar uma breve visita para eu avaliar seu imóvel e conversarmos sobre os valores de mercado?`
+  ],
+  4: [
+    (s, n, a, d, l) => `${s}, ${n}! Tudo bem?\n\n${a}. Estou realizando uma atualização de rotina na nossa base de imóveis cadastrados.\n\nGostaria de confirmar com você se seu imóvel segue disponível para negociação e se houve alguma alteração em informações como (${d}).${l ? '\n\nLink do seu cadastro em nosso portal: ' + l : ''}\n\nEssa confirmação é fundamental para garantirmos a melhor divulgação para os clientes certos. Aguardo seu retorno!`
+  ],
+  5: [
+    (s, n, a, o) => `${s}, ${n}! ${o === 'aniversario' ? '🎂 Desejo um Feliz Aniversário repleto de saúde, realizações e muitas conquistas!' : '🎄 Desejo a você e sua família Boas Festas com muita paz e alegrias!'}\n\n${a}. Faço questão de enviar esta mensagem lembrando com muito carinho de você. Conte comigo sempre que precisar no mercado imobiliário!`
+  ],
+  6: [
+    (s, n, a, i, e, l, t) => `${s}, ${n}! Tudo bem? Colega de profissão, aqui é o ${a.replace('Meu nome é ', '').replace('Sou ', '')}.${i || e ? ` Estou com um cliente em potencial muito interessado no imóvel ${i ? 'cód. ' + i : ''} ${e ? 'localizado na ' + e : ''} que você está agenciando.` : ''}${l ? '\n\nConfirmei as fotos por este link: ' + l : ''}\n\nEstou entrando em contato para verificar se o imóvel ainda está disponível para ${t} e alinharmos uma visita acompanhada com esse cliente. Qual dia e horário você possui disponibilidade para me acompanhar?`
+  ]
+};
+
+function aplicarTomDeVoz(texto, tom) {
+  let mod = texto;
+  switch (parseInt(tom)) {
+    case 0: break;
+    case 1:
+      mod = mod.replace(/Tudo bem\?/g, "Espero que este contato o encontre bem.")
+               .replace(/Tudo ótimo\?/g, "Espero que esteja tudo em perfeita ordem.")
+               .replace(/Um abraço!/g, "Atenciosamente,");
+      break;
+    case 2:
+      mod = mod.replace(/Espero que esteja tendo um ótimo dia\./g, "tudo certinho contigo?")
+               .replace(/Como vai\?/g, "e aí, tudo belezinha?");
+      break;
+    case 3:
+      mod = "🚨 [ALERTA DE OPORTUNIDADE IMPERDÍVEL]:\n\n" + mod;
+      break;
+    case 4:
+      mod = mod.replace(/Espero que esteja tendo um ótimo dia\./g, "");
+      break;
+  }
+  return mod;
+}
+
+function popularSelectVariacoes() {
+  const sel = document.getElementById("variacaoMsg");
+  if(!sel) return;
+  sel.innerHTML = "";
+  for (let i = 0; i < 20; i++) {
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = `Variação ${i + 1}`;
+    sel.appendChild(opt);
+  }
+}
+
+function abrirDrawer() {
+  document.getElementById("drawerOverlay").classList.add("active");
+  document.getElementById("drawerMenu").classList.add("active");
+}
+
+function fecharDrawer() {
+  document.getElementById("drawerOverlay").classList.remove("active");
+  document.getElementById("drawerMenu").classList.remove("active");
+}
+
+function alternarModuloViaDrawer(modId) {
+  fecharDrawer();
+  navegarModulo(modId);
+}
+
+function navegarModulo(modId) {
+  document.querySelectorAll('.main-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.main-nav-btn').forEach(b => b.classList.remove('active'));
+
+  const alvo = document.getElementById(modId);
+  if (alvo) alvo.classList.add('active');
+  const btnNav = document.getElementById('nav-' + modId);
+  if (btnNav) btnNav.classList.add('active');
+}
+
+function definirModoTransacao(modo) {
+  modoTransacao = modo;
+  document.getElementById("btnTransVenda").classList.toggle("active", modo === 'venda');
+  document.getElementById("btnTransAluguel").classList.toggle("active", modo === 'aluguel');
+  atualizarMensagem();
+}
+
+function alternarTema() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const target = current === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', target);
+  localStorage.setItem('gam_theme', target);
+}
+
+function sincronizarCodigosAuxiliadora() {
+  const codC = document.getElementById("codigoCorretor").value.trim();
+  const codI = document.getElementById("imovel").value.trim();
+
+  if (codC && codI) {
+    document.getElementById("urlImovel").value = `${codC}/${codI}`;
+  } else if (codC) {
+    document.getElementById("urlImovel").value = `${codC}/`;
+  }
+  atualizarMensagem();
+}
+
+function aoDigitarSufixoUrl() {
+  const valor = document.getElementById("urlImovel").value.trim();
+  if (valor.includes("/selecionados/")) {
+    const p = valor.split("/selecionados/");
+    if (p[1]) document.getElementById("urlImovel").value = p[1];
+  }
+
+  const partes = document.getElementById("urlImovel").value.split("/");
+  if (partes[0]) document.getElementById("codigoCorretor").value = partes[0];
+  if (partes[1]) document.getElementById("imovel").value = partes[1];
+
+  atualizarMensagem();
+}
+
+function obterUrlCompleta() {
+  const sufixo = document.getElementById("urlImovel").value.trim();
+  if (!sufixo) return "";
+  if (sufixo.startsWith("http")) return sufixo;
+  return BASE_URL_AUXILIADORA + sufixo;
+}
+
+function selecionarTipo(tipo) {
+  tipoSelecionado = tipo;
+  document.querySelectorAll(".message-type").forEach(b => b.classList.remove("active"));
+  document.getElementById("tipo" + tipo).classList.add("active");
+
+  document.querySelectorAll(".dynamic-field").forEach(e => e.classList.add("hidden"));
+  document.querySelectorAll(".tipo" + tipo + "-campo").forEach(e => e.classList.remove("hidden"));
+
+  const labelNome = document.getElementById("labelNome");
+  if (labelNome) {
+    labelNome.innerHTML = (tipo === 6) ? 'Nome do Corretor/Agenciador' : 'Nome do cliente';
+  }
+
+  atualizarMensagem();
+}
+
+function aoMudarManualVariacao() {
+  envioContador = 0;
+  localStorage.setItem('gam_envio_count', 0);
+  atualizarMensagem();
+}
+
+function construirTexto() {
+  const nome = document.getElementById("nome").value.trim() || (tipoSelecionado === 6 ? "[Nome do Corretor]" : "[Nome do Cliente]");
+  const saudacao = document.getElementById("saudacao").value;
+  const corretor = document.getElementById("nomeCorretor").value.trim();
+  const apresentacao = corretor ? `Meu nome é ${corretor}, corretor da Auxiliadora Predial` : `Sou corretor da Auxiliadora Predial`;
+  const idx = parseInt(document.getElementById("variacaoMsg").value) || 0;
+  const link = obterUrlCompleta();
+  const transacao = modoTransacao === 'venda' ? 'venda' : 'locação/aluguel';
+
+  let base = "";
+  const tArr = templates[tipoSelecionado] || templates[1];
+  const fn = tArr[idx % tArr.length];
+
+  if (tipoSelecionado === 1) {
+    const imovel = document.getElementById("imovel").value.trim();
+    const end = document.getElementById("endereco").value.trim();
+    base = fn(saudacao, nome, apresentacao, imovel, end, link, transacao);
+  } else if (tipoSelecionado === 2) {
+    const obs = document.getElementById("observacaoAntigo").value.trim();
+    base = fn(saudacao, nome, apresentacao, obs, link, transacao);
+  } else if (tipoSelecionado === 3) {
+    const endP = document.getElementById("enderecoProprietario").value.trim();
+    base = fn(saudacao, nome, apresentacao, endP, transacao, link);
+  } else if (tipoSelecionado === 4) {
+    const dados = document.getElementById("dadosAtualizacao").value.trim() || "dados";
+    base = fn(saudacao, nome, apresentacao, dados, link);
+  } else if (tipoSelecionado === 5) {
+    const fest = document.getElementById("dataFestiva").value;
+    base = fn(saudacao, nome, apresentacao, fest);
+  } else if (tipoSelecionado === 6) {
+    const imovel = document.getElementById("imovel").value.trim();
+    const end = document.getElementById("endereco").value.trim();
+    base = fn(saudacao, nome, apresentacao, imovel, end, link, transacao);
+  }
+
+  const tomVal = document.getElementById("tomVoz").value;
+  base = aplicarTomDeVoz(base, tomVal);
+
+  if (modoTransacao === 'aluguel') {
+    base = base.replace(/comprar/gi, "alugar").replace(/vender/gi, "locar").replace(/Venda/gi, "Locação");
+  }
+
+  return base;
+}
+
+function atualizarMensagem() {
+  mensagemAtual = construirTexto();
+  document.getElementById("previewText").innerHTML = mensagemAtual.replace(/\n/g, "<br>");
+  
+  const nomeCliente = document.getElementById("nome").value.trim();
+  document.getElementById("contactName").textContent = nomeCliente || (tipoSelecionado === 6 ? "Corretor" : "Cliente");
+  document.getElementById("avatarLetra").textContent = nomeCliente ? nomeCliente.charAt(0).toUpperCase() : "C";
+
+  const tel = document.getElementById("telefone").value.replace(/\D/g, "");
+  document.getElementById("btnWhatsApp").disabled = tel.length < 10;
+
+  const curVar = (parseInt(document.getElementById("variacaoMsg").value) || 0) + 1;
+  document.getElementById("envioCountDisplay").textContent = `${envioContador} / 5`;
+  document.getElementById("variacaoBadge").textContent = `Modelo ${curVar}`;
+}
+
+function abrirWhatsApp() {
+  const tel = document.getElementById("telefone").value.replace(/\D/g, "");
+  const nome = document.getElementById("nome").value.trim() || (tipoSelecionado === 6 ? "Corretor" : "Cliente");
+  const imovel = document.getElementById("imovel").value.trim() || document.getElementById("endereco").value.trim() || "Imóvel Geral";
+
+  if (tel.length < 10) return;
+
+  const registro = {
+    id: Date.now(),
+    nome,
+    telefone: tel,
+    imovel,
+    data: new Date().toLocaleString('pt-BR')
+  };
+
+  historicoEnvios.unshift(registro);
+  localStorage.setItem('gam_historico', JSON.stringify(historicoEnvios));
+  renderizarHistorico();
+
+  const url = `https://wa.me/55${tel}?text=${encodeURIComponent(mensagemAtual)}`;
+  window.open(url, "_blank");
+}
+
+function limparCampos() {
+  document.querySelectorAll("#mod-gerador input").forEach(i => i.value = "");
+  document.querySelectorAll("#mod-gerador select").forEach(s => s.selectedIndex = 0);
+  atualizarMensagem();
+}
+
+function copiarMensagem() {
+  navigator.clipboard.writeText(mensagemAtual);
+  alert("Mensagem copiada para a área de transferência!");
+}
+
+function mudarAba(evt, abaId) {
+  document.querySelectorAll(".tabs-header .tab-btn").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+  
+  evt.currentTarget.classList.add("active");
+  document.getElementById(abaId).classList.add("active");
+}
+
+function salvarModeloFavorito() {
+  const tit = document.getElementById("nomeModeloFav").value.trim();
+  const txt = document.getElementById("textoModeloFav").value.trim();
+
+  if(!tit || !txt) {
+    alert("Preencha título e texto do modelo.");
+    return;
+  }
+
+  favoritos.push({ id: Date.now(), titulo: tit, texto: txt });
+  localStorage.setItem('gam_favoritos', JSON.stringify(favoritos));
+  document.getElementById("nomeModeloFav").value = "";
+  document.getElementById("textoModeloFav").value = "";
+  renderizarFavoritos();
+}
+
+function renderizarFavoritos() {
+  const container = document.getElementById("favList");
+  if(!container) return;
+  container.innerHTML = "";
+
+  favoritos.forEach(f => {
+    const div = document.createElement("div");
+    div.className = "card-item";
+    div.innerHTML = `
+      <div class="card-title">${f.titulo}</div>
+      <div class="card-body">${f.texto}</div>
+      <div class="card-actions">
+        <button class="btn-mini" onclick="copiarTextoGenerico('${encodeURIComponent(f.texto)}')">📋 Copiar</button>
+        <button class="btn-mini danger" onclick="removerFavorito(${f.id})">🗑️ Excluir</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function removerFavorito(id) {
+  favoritos = favoritos.filter(f => f.id !== id);
+  localStorage.setItem('gam_favoritos', JSON.stringify(favoritos));
+  renderizarFavoritos();
+}
+
+function copiarTextoGenerico(txt) {
+  navigator.clipboard.writeText(decodeURIComponent(txt));
+  alert("Texto copiado!");
+}
+
+function executarDisparoRapido() {
+  const baseMsg = document.getElementById("disparoMensagemBase").value.trim();
+  if(!baseMsg) {
+    alert("Por favor, informe a mensagem base do disparo.");
+    return;
+  }
+
+  let disparados = 0;
+  for (let i = 1; i <= 5; i++) {
+    const nome = document.getElementById(`dispNome${i}`).value.trim();
+    const tel = document.getElementById(`dispTel${i}`).value.replace(/\D/g, "");
+
+    if (nome && tel.length >= 10) {
+      const msgPersonalizada = baseMsg.replace(/{NOME}/g, nome);
+      const url = `https://wa.me/55${tel}?text=${encodeURIComponent(msgPersonalizada)}`;
+      window.open(url, "_blank");
+      disparados++;
+    }
+  }
+
+  if (disparados < 2) {
+    alert("Preencha ao menos 2 contatos válidos com nome e WhatsApp.");
+  } else {
+    alert(`Disparo iniciado para ${disparados} contatos!`);
+  }
+}
+
+function atualizarPlantao() {
+  const nome = document.getElementById("plantaoNome").value.trim() || "Cliente Plantão";
+  const imovel = document.getElementById("plantaoImovel").value.trim() || "imóvel de seu interesse";
+  const interesse = document.getElementById("plantaoInteresse").value;
+  const corretor = document.getElementById("nomeCorretor").value.trim() || "Corretor";
+
+  mensagemPlantaoAtual = `Olá, ${nome}! Tudo bem?\n\nAqui é o ${corretor} da Auxiliadora Predial. Conforme conversamos ao telefone sobre a opção de ${interesse.toLowerCase()} (${imovel}), já salvei seu contato por aqui.\n\nFico no seu aguardo para te enviar todas as fichas e agendarmos uma visita!`;
+
+  document.getElementById("previewTextPlantao").innerHTML = mensagemPlantaoAtual.replace(/\n/g, "<br>");
+  document.getElementById("contactNamePlantao").textContent = nome;
+  document.getElementById("avatarLetraPlantao").textContent = nome.charAt(0).toUpperCase();
+}
+
+function enviarWhatsAppPlantao() {
+  const tel = document.getElementById("plantaoTel").value.replace(/\D/g, "");
+  if(tel.length < 10) {
+    alert("Informe um número de WhatsApp válido.");
+    return;
+  }
+  const url = `https://wa.me/55${tel}?text=${encodeURIComponent(mensagemPlantaoAtual)}`;
+  window.open(url, "_blank");
+}
+
+function agendarFollowupPlantao(tempo) {
+  const nome = document.getElementById("plantaoNome").value.trim() || "Cliente Plantão";
+  const tel = document.getElementById("plantaoTel").value.trim();
+
+  let desc = `Lembrar de ligar/mandar mensagem para ${nome}`;
+  if(tempo === 'fim') {
+    desc += " no fim do plantão (18h).";
+  } else {
+    desc += ` daqui a ${tempo} hora(s).`;
+  }
+
+  listaFollowup.push({
+    id: Date.now(),
+    cliente: nome,
+    telefone: tel,
+    data: new Date().toLocaleDateString('pt-BR'),
+    hora: tempo === 'fim' ? '18:00' : 'Em breve',
+    notas: desc
+  });
+
+  localStorage.setItem('gam_followups', JSON.stringify(listaFollowup));
+  renderizarFollowups();
+  alert("Follow-up agendado com sucesso!");
+}
+
+function copiarMensagemPlantao() {
+  navigator.clipboard.writeText(mensagemPlantaoAtual);
+  alert("Mensagem de plantão copiada!");
+}
+
+function gerarCopysAnuncio() {
+  const tipo = document.getElementById("adTipo").value || "Apartamento";
+  const bairro = document.getElementById("adBairro").value || "Excelente localização";
+  const dorms = document.getElementById("adDorms").value || "Amplo espaço";
+  const valor = document.getElementById("adValor").value || "Consulte valor";
+  const diff = document.getElementById("adDiferenciais").value || "Infraestrutura completa";
+  const cont = document.getElementById("adContato").value || "";
+
+  const container = document.getElementById("copyResultsContainer");
+  container.innerHTML = "";
+
+  for (let i = 1; i <= 20; i++) {
+    const copy = `🏠 OPORTUNIDADE IMPERDÍVEL #${i}\n\n${tipo} incrível disponível no bairro ${bairro}.\n\n✨ Destaques do imóvel:\n• ${dorms}\n• ${diff}\n\n💰 Valor: ${valor}\n\n💬 Agende sua visita agora mesmo!\n📞 Contato/WhatsApp: ${cont}`;
+    
+    const div = document.createElement("div");
+    div.className = "card-item";
+    div.innerHTML = `
+      <div class="card-title">Modelo ${i}</div>
+      <div class="card-body">${copy}</div>
+      <div class="card-actions">
+        <button class="btn-mini" onclick="copiarTextoGenerico('${encodeURIComponent(copy)}')">📋 Copiar Copy</button>
+      </div>
+    `;
+    container.appendChild(div);
+  }
+}
+
+function renderizarObjecoes(lista) {
+  const container = document.getElementById("objList");
+  if(!container) return;
+  container.innerHTML = "";
+
+  lista.forEach(o => {
+    const div = document.createElement("div");
+    div.className = "card-item";
+    div.innerHTML = `
+      <div class="card-title">❓ Objeção: "${o.titulo}"</div>
+      <div class="card-body">💡 <strong>Resposta Sugerida:</strong>\n${o.resposta}</div>
+      <div class="card-actions">
+        <button class="btn-mini" onclick="copiarTextoGenerico('${encodeURIComponent(o.resposta)}')">📋 Copiar Resposta</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function filtrarObjecoes() {
+  const termo = document.getElementById("buscaObj").value.toLowerCase();
+  const filtradas = objecoesBase.filter(o => o.titulo.toLowerCase().includes(termo) || o.resposta.toLowerCase().includes(termo));
+  renderizarObjecoes(filtradas);
+}
+
+function atualizarPosVendas() {
+  const nome = document.getElementById("posCliente").value.trim() || "[Nome do Cliente]";
+  const tipo = document.getElementById("posTipo").value;
+  const corretor = document.getElementById("nomeCorretor").value.trim() || "seu corretor";
+
+  let texto = "";
+  if(tipo === "agradecimento") {
+    texto = `Olá, ${nome}! Passando para agradecer pela confiança no meu trabalho durante a conquista do seu imóvel. Foi uma satisfação enorme te assessorar! Conte comigo sempre.`;
+  } else if(tipo === "posEntrega") {
+    texto = `Olá, ${nome}! Tudo bem? Como está sendo a mudança e os primeiros dias na casa nova? Espero que esteja tudo impecável! Se precisar de algo, estou à disposição.`;
+  } else if(tipo === "indicacao") {
+    texto = `Olá, ${nome}! Tudo ótimo? Se você tiver amigos ou familiares que estejam buscando comprar ou alugar imóveis, ficarei honrado em receber sua indicação!`;
+  } else {
+    texto = `Parabéns, ${nome}! Hoje faz 1 ano da entrega do seu imóvel. Espero que esse lar tenha trazido muitas alegrias para sua família!`;
+  }
+
+  document.getElementById("posPreviewText").textContent = texto;
+}
+
+function enviarPosVendaWhatsApp() {
+  const tel = document.getElementById("posTel").value.replace(/\D/g, "");
+  const txt = document.getElementById("posPreviewText").textContent;
+  if(tel.length < 10) {
+    alert("Informe um telefone válido.");
+    return;
+  }
+  window.open(`https://wa.me/55${tel}?text=${encodeURIComponent(txt)}`, "_blank");
+}
+
+function solicitarPermissaoEAgendar() {
+  const cliente = document.getElementById("followCliente").value.trim();
+  const tel = document.getElementById("followTel").value.trim();
+  const data = document.getElementById("followData").value;
+  const hora = document.getElementById("followHora").value;
+  const notas = document.getElementById("followNotas").value.trim();
+
+  if(!cliente || !data) {
+    alert("Informe pelo menos o nome do cliente e a data.");
+    return;
+  }
+
+  listaFollowup.push({ id: Date.now(), cliente, telefone: tel, data, hora, notas });
+  localStorage.setItem('gam_followups', JSON.stringify(listaFollowup));
+  renderizarFollowups();
+  alert("Lembrete salvo com sucesso!");
+}
+
+function renderizarFollowups() {
+  const container = document.getElementById("followList");
+  if(!container) return;
+  container.innerHTML = "";
+
+  listaFollowup.forEach(f => {
+    const div = document.createElement("div");
+    div.className = "card-item";
+    div.innerHTML = `
+      <div class="card-title">👤 ${f.cliente} - 📅 ${f.data} às ${f.hora}</div>
+      <div class="card-body">📱 ${f.telefone || 'Sem telefone'}\n📝 ${f.notas}</div>
+      <div class="card-actions">
+        <button class="btn-mini danger" onclick="removerFollowup(${f.id})">🗑️ Concluir / Remover</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function removerFollowup(id) {
+  listaFollowup = listaFollowup.filter(f => f.id !== id);
+  localStorage.setItem('gam_followups', JSON.stringify(listaFollowup));
+  renderizarFollowups();
+}
+
+function renderizarHistorico() {
+  const container = document.getElementById("historyList");
+  if(!container) return;
+  container.innerHTML = "";
+
+  if(historicoEnvios.length === 0) {
+    container.innerHTML = '<div style="font-size: 12px; color: var(--muted); text-align: center; padding: 20px;">Nenhum envio registrado ainda.</div>';
+    return;
+  }
+
+  historicoEnvios.forEach(h => {
+    const div = document.createElement("div");
+    div.className = "card-item";
+    div.innerHTML = `
+      <div class="card-title">👤 ${h.nome} (${h.telefone})</div>
+      <div class="card-body">🏠 Referência: ${h.imovel}\n🕒 Data: ${h.data}</div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function carregarFotoPerfil(evt) {
+  const file = evt.target.files[0];
+  if(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      perfilCorretor.foto = e.target.result;
+      document.getElementById("profileImgPreview").src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function salvarPerfil() {
+  perfilCorretor.nome = document.getElementById("perfilNome").value.trim();
+  perfilCorretor.email = document.getElementById("perfilEmail").value.trim();
+  perfilCorretor.senha = document.getElementById("perfilSenha").value.trim();
+
+  localStorage.setItem('gam_perfil', JSON.stringify(perfilCorretor));
+  atualizarInterfacePerfil(perfilCorretor.nome, perfilCorretor.foto);
+  alert("Perfil salvo com sucesso!");
+}
+
+function salvarConfiguracoes() {
+  const saud = document.getElementById("cfgSaudacaoPadrao").value;
+  document.getElementById("saudacao").value = saud;
+  atualizarMensagem();
+}
+
+function limparHistoricoECACHE() {
+  if(confirm("Deseja realmente apagar todo o histórico e modelos armazenados localmente?")) {
+    localStorage.clear();
+    location.reload();
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  popularSelectVariacoes();
+  renderizarFavoritos();
+  renderizarObjecoes(objecoesBase);
+  renderizarFollowups();
+  renderizarHistorico();
+  atualizarPosVendas();
+  atualizarPlantao();
+
+  const savedTheme = localStorage.getItem('gam_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+
+  if (perfilCorretor.email) {
+    document.getElementById("perfilEmail").value = perfilCorretor.email;
+    processarEmailParaNome(perfilCorretor.email);
+  }
+
+  atualizarMensagem();
+});
+</script>
+</body>
+</html>
