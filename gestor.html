@@ -1237,6 +1237,20 @@ body::before { content:""; position:fixed; inset:0; background:url("https://medi
           </div>
 
           <button class="btn-copy" onclick="copiarMensagem()">Copiar mensagem</button>
+          <button class="btn btn-edit" id="btnEditarMensagem" onclick="editarMensagem()">✎ Editar mensagem</button>
+
+          <div id="areaEdicaoMensagem" class="edit-message-box hidden">
+            <div class="panel-title" style="margin-bottom: 0;">✎ Editar mensagem</div>
+            <span style="font-size: 10px; color: var(--muted); display: block; margin-top: 4px;">
+              Adicione, remova ou altere qualquer parte antes de copiar ou enviar.
+            </span>
+            <textarea id="editorMensagem" oninput="sincronizarEdicao()" placeholder="Edite sua mensagem aqui..."></textarea>
+            <span class="edit-char-count" id="contadorEdicao">0 caracteres</span>
+            <div class="edit-message-actions">
+              <button class="btn btn-clear" onclick="cancelarEdicaoMensagem()">Cancelar</button>
+              <button class="btn btn-whatsapp" onclick="salvarEdicaoMensagem()">✓ Salvar edição</button>
+            </div>
+          </div>
         </div>
 
         <div id="tab-favoritos" class="tab-content">
@@ -1650,6 +1664,8 @@ body::before { content:""; position:fixed; inset:0; background:url("https://medi
 let tipoSelecionado = 1;
 let modoTransacao = 'venda';
 let mensagemAtual = "";
+let mensagemOriginalAntesEdicao = "";
+let editandoMensagem = false;
 let mensagemPlantaoAtual = "";
 const BASE_URL_AUXILIADORA = "https://www.auxiliadorapredial.com.br/selecionados/";
 
@@ -1904,7 +1920,11 @@ function construirTexto() {
 
 function atualizarMensagem() {
   mensagemAtual = construirTexto();
-  document.getElementById("previewText").innerHTML = mensagemAtual.replace(/\n/g, "<br>");
+
+  // Se o usuário estiver editando, mantém a edição aberta somente até ele salvar/cancelar.
+  if (!editandoMensagem) {
+    document.getElementById("previewText").innerHTML = mensagemAtual.replace(/\n/g, "<br>");
+  }
   
   const nomeCliente = document.getElementById("nome").value.trim();
   document.getElementById("contactName").textContent = nomeCliente || (tipoSelecionado === 6 ? "Corretor" : "Cliente");
@@ -1941,7 +1961,98 @@ function abrirWhatsApp() {
   window.open(url, "_blank");
 }
 
+function editarMensagem() {
+  if (!mensagemAtual || mensagemAtual === "Preencha os campos ao lado para gerar a mensagem.") {
+    alert("Gere uma mensagem primeiro para poder editá-la.");
+    return;
+  }
+
+  mensagemOriginalAntesEdicao = mensagemAtual;
+  editandoMensagem = true;
+
+  const area = document.getElementById("areaEdicaoMensagem");
+  const editor = document.getElementById("editorMensagem");
+  const botao = document.getElementById("btnEditarMensagem");
+
+  editor.value = mensagemAtual;
+  area.classList.remove("hidden");
+  botao.textContent = "✎ Editando...";
+  botao.disabled = true;
+
+  sincronizarEdicao();
+  editor.focus();
+  editor.setSelectionRange(editor.value.length, editor.value.length);
+}
+
+function sincronizarEdicao() {
+  const editor = document.getElementById("editorMensagem");
+  const texto = editor.value;
+
+  document.getElementById("previewText").innerHTML = texto
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\n/g, "<br>");
+
+  document.getElementById("contadorEdicao").textContent =
+    `${texto.length} caracteres`;
+}
+
+function salvarEdicaoMensagem() {
+  const editor = document.getElementById("editorMensagem");
+  const textoEditado = editor.value.trim();
+
+  if (!textoEditado) {
+    alert("A mensagem não pode ficar vazia.");
+    return;
+  }
+
+  mensagemAtual = textoEditado;
+  editandoMensagem = false;
+
+  document.getElementById("previewText").innerHTML = mensagemAtual
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\n/g, "<br>");
+
+  document.getElementById("areaEdicaoMensagem").classList.add("hidden");
+
+  const botao = document.getElementById("btnEditarMensagem");
+  botao.textContent = "✎ Editar mensagem";
+  botao.disabled = false;
+
+  mostrarStatus("Edição salva! A mensagem editada será usada no copiar e no WhatsApp.", "success");
+}
+
+function cancelarEdicaoMensagem() {
+  mensagemAtual = mensagemOriginalAntesEdicao;
+  editandoMensagem = false;
+
+  document.getElementById("previewText").innerHTML = mensagemAtual
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\n/g, "<br>");
+
+  document.getElementById("areaEdicaoMensagem").classList.add("hidden");
+
+  const botao = document.getElementById("btnEditarMensagem");
+  botao.textContent = "✎ Editar mensagem";
+  botao.disabled = false;
+}
+
 function limparCampos() {
+  editandoMensagem = false;
+  mensagemOriginalAntesEdicao = "";
+  const area = document.getElementById("areaEdicaoMensagem");
+  const botao = document.getElementById("btnEditarMensagem");
+  if (area) area.classList.add("hidden");
+  if (botao) {
+    botao.textContent = "✎ Editar mensagem";
+    botao.disabled = false;
+  }
+
   document.querySelectorAll("#mod-gerador input").forEach(i => i.value = "");
   document.querySelectorAll("#mod-gerador select").forEach(s => s.selectedIndex = 0);
   atualizarMensagem();
