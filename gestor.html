@@ -1275,7 +1275,7 @@ body::before { content:""; position:fixed; inset:0; background:url("https://medi
         <section class="panel">
           <div class="panel-title">🚀 Disparo Rápido em Massa (2 a 5 Mensagens)</div>
           <p style="font-size: 12px; color: var(--muted); margin-bottom: 15px;">
-            Preencha os dados dos clientes para disparar automaticamente mensagens para até 5 contatos ao mesmo tempo.
+            Preencha de 2 a 5 contatos. O app prepara uma mensagem personalizada para cada pessoa, usando o nome informado.
           </p>
 
           <div class="form-grid">
@@ -1291,7 +1291,7 @@ body::before { content:""; position:fixed; inset:0; background:url("https://medi
             <div class="field full">
               <label for="disparoMensagemBase">Texto Padrão / Modelo da Mensagem</label>
               <textarea id="disparoMensagemBase" rows="3" placeholder="Ex: Olá {NOME}! Sou o corretor da Auxiliadora Predial. Vi seu interesse no imóvel. Como posso te ajudar hoje?"></textarea>
-              <span style="font-size: 10px; color: var(--muted); margin-top: 2px;">Dica: Use <strong>{NOME}</strong> onde deseja que o nome de cada pessoa apareça automaticamente.</span>
+              <span style="font-size: 10px; color: var(--muted); margin-top: 2px;">O nome é personalizado para cada contato. Use <strong>{NOME}</strong> no ponto desejado; se não usar o marcador, o sistema adiciona automaticamente “Olá, Nome!” no começo da mensagem.</span>
             </div>
 
             <div class="field full">
@@ -1338,8 +1338,9 @@ body::before { content:""; position:fixed; inset:0; background:url("https://medi
         <div class="panel-title">ℹ️ Instruções do Disparo</div>
         <p style="font-size: 11px; color: var(--muted); line-height: 1.5;">
           • Preencha pelo menos <strong>2 pessoas</strong> (mínimo) até no máximo <strong>5 pessoas</strong>.<br><br>
-          • Ao clicar em disparar, o aplicativo abrirá abas individuais do WhatsApp com a mensagem personalizada contendo o nome correto de cada cliente.<br><br>
-          • Certifique-se de permitir que o seu navegador abra janelas/abas pop-ups.
+          • Use <strong>{NOME}</strong> para escolher onde o nome entra. Se esquecer o marcador, o sistema acrescenta “Olá, Nome!” no início automaticamente.<br><br>
+          • O aplicativo tenta abrir uma conversa por contato com a mensagem já preenchida. O navegador pode bloquear algumas abas; se isso acontecer, permita pop-ups para este site.<br><br>
+          • Por segurança, o WhatsApp não permite que este site envie as mensagens sozinho: confira cada conversa e pressione <strong>Enviar</strong> no WhatsApp.
         </p>
       </section>
     </main>
@@ -2118,32 +2119,84 @@ function copiarTextoGenerico(txt) {
   alert("Texto copiado!");
 }
 
+function montarMensagemDisparo(nome, modelo) {
+  const marcador = /\{NOME\}/i;
+  // Se o modelo tiver {NOME}, troca o marcador pelo nome específico do contato.
+  // Se não tiver, adiciona uma saudação personalizada no começo automaticamente.
+  if (marcador.test(modelo)) return modelo.replace(/\{NOME\}/gi, nome);
+  return `Olá, ${nome}!\n\n${modelo}`;
+}
+
+function atualizarPreviaDisparo() {
+  const modelo = document.getElementById("disparoMensagemBase")?.value.trim() || "Sua mensagem aparecerá aqui.";
+  for (let i = 1; i <= 5; i++) {
+    const nome = document.getElementById(`dispNome${i}`)?.value.trim();
+    const tel = document.getElementById(`dispTel${i}`)?.value.trim();
+    const id = `dispPreview${i}`;
+    let previa = document.getElementById(id);
+    if (!previa) {
+      const linha = document.getElementById(`dispNome${i}`)?.closest('.disparo-item');
+      if (!linha) continue;
+      previa = document.createElement('div');
+      previa.id = id;
+      previa.style.cssText = 'flex-basis:100%; width:100%; font-size:11px; color:var(--muted); padding:4px 8px 8px 30px; white-space:pre-wrap;';
+      linha.appendChild(previa);
+    }
+    previa.textContent = nome ? `Prévia para ${nome}: ${montarMensagemDisparo(nome, modelo)}` : 'Digite o nome para ver a mensagem personalizada.';
+    previa.style.display = (nome || tel) ? 'block' : 'none';
+  }
+}
+
 function executarDisparoRapido() {
   const baseMsg = document.getElementById("disparoMensagemBase").value.trim();
-  if(!baseMsg) {
+  if (!baseMsg) {
     alert("Por favor, informe a mensagem base do disparo.");
     return;
   }
 
-  let disparados = 0;
+  const contatos = [];
   for (let i = 1; i <= 5; i++) {
     const nome = document.getElementById(`dispNome${i}`).value.trim();
-    const tel = document.getElementById(`dispTel${i}`).value.replace(/\D/g, "");
-
-    if (nome && tel.length >= 10) {
-      const msgPersonalizada = baseMsg.replace(/{NOME}/g, nome);
-      const url = `https://wa.me/55${tel}?text=${encodeURIComponent(msgPersonalizada)}`;
-      window.open(url, "_blank");
-      disparados++;
+    let tel = document.getElementById(`dispTel${i}`).value.replace(/\D/g, "");
+    if (tel.startsWith("55") && (tel.length === 12 || tel.length === 13)) tel = tel.slice(2);
+    if (!nome && !tel) continue;
+    if (!nome || (tel.length !== 10 && tel.length !== 11)) {
+      alert(`Confira o contato ${i}: informe o nome e um WhatsApp válido com DDD.`);
+      return;
     }
+    const msgPersonalizada = montarMensagemDisparo(nome, baseMsg);
+    contatos.push({ nome, url: `https://wa.me/55${tel}?text=${encodeURIComponent(msgPersonalizada)}` });
   }
 
-  if (disparados < 2) {
+  if (contatos.length < 2) {
     alert("Preencha ao menos 2 contatos válidos com nome e WhatsApp.");
+    return;
+  }
+
+  // As janelas são abertas diretamente no clique para reduzir bloqueios de pop-up.
+  const janelas = contatos.map(() => window.open("about:blank", "_blank"));
+  let abertas = 0;
+  janelas.forEach((janela, indice) => {
+    if (janela) {
+      janela.location.href = contatos[indice].url;
+      abertas++;
+    }
+  });
+  if (abertas === contatos.length) {
+    alert(`${abertas} conversas abertas. Cada mensagem recebeu o nome correto. Confira e pressione Enviar em cada conversa do WhatsApp.`);
   } else {
-    alert(`Disparo iniciado para ${disparados} contatos!`);
+    alert(`O navegador abriu ${abertas} de ${contatos.length} conversas. Permita pop-ups para este site e tente novamente. Pressione Enviar manualmente em cada conversa aberta.`);
   }
 }
+
+// Mostra a mensagem final de cada contato enquanto você preenche o formulário.
+document.addEventListener('input', function(event) {
+  if (event.target && (event.target.id === 'disparoMensagemBase' || /^disp(Nome|Tel)[1-5]$/.test(event.target.id))) {
+    atualizarPreviaDisparo();
+  }
+});
+
+
 
 function atualizarPlantao() {
   const nome = document.getElementById("plantaoNome").value.trim() || "Cliente Plantão";
