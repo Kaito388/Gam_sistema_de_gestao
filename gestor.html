@@ -892,6 +892,36 @@ button.btn {
   align-items: center;
 }
 
+.disparo-image-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px dashed var(--panel-border);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.18);
+}
+.disparo-image-preview {
+  display: none;
+  max-width: 220px;
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: 10px;
+  border: 1px solid var(--panel-border);
+  background: rgba(0,0,0,.2);
+}
+.disparo-image-help {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.disparo-image-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+
 .disparo-num {
   font-weight: 700;
   font-size: 11px;
@@ -1292,6 +1322,20 @@ body::before { content:""; position:fixed; inset:0; background:url("https://medi
               <label for="disparoMensagemBase">Texto Padrão / Modelo da Mensagem</label>
               <textarea id="disparoMensagemBase" rows="3" placeholder="Ex: Olá {NOME}! Sou o corretor da Auxiliadora Predial. Vi seu interesse no imóvel. Como posso te ajudar hoje?"></textarea>
               <span style="font-size: 10px; color: var(--muted); margin-top: 2px;">O nome é personalizado para cada contato. Use <strong>{NOME}</strong> no ponto desejado; se não usar o marcador, o sistema adiciona automaticamente “Olá, Nome!” no começo da mensagem.</span>
+            </div>
+
+            <div class="field full">
+              <label for="disparoImagem">Imagem opcional para acompanhar o disparo</label>
+              <div class="disparo-image-box">
+                <input id="disparoImagem" type="file" accept="image/*" onchange="atualizarImagemDisparo(this)">
+                <img id="disparoImagemPreview" class="disparo-image-preview" alt="Prévia da imagem selecionada">
+                <div id="disparoImagemNome" class="disparo-image-help">Nenhuma imagem selecionada. Se não escolher uma imagem, o disparo funciona somente com texto.</div>
+                <div class="disparo-image-actions">
+                  <button type="button" class="btn btn-clear" onclick="removerImagemDisparo()">Remover imagem</button>
+                  <button type="button" class="btn btn-clear" id="btnBaixarImagemDisparo" onclick="baixarImagemDisparo()" style="display:none;">Baixar imagem selecionada</button>
+                </div>
+                <p class="disparo-image-help"><strong>Importante:</strong> o WhatsApp não permite anexar automaticamente uma imagem por meio do link de abertura da conversa. O sistema abrirá a mensagem para cada contato; para enviar a mesma imagem a todos, anexe a imagem selecionada manualmente em cada conversa antes de pressionar Enviar.</p>
+              </div>
             </div>
 
             <div class="field full">
@@ -2147,6 +2191,71 @@ function atualizarPreviaDisparo() {
   }
 }
 
+let arquivoImagemDisparo = null;
+let urlImagemDisparo = null;
+
+function atualizarImagemDisparo(input) {
+  const arquivo = input && input.files ? input.files[0] : null;
+  const preview = document.getElementById("disparoImagemPreview");
+  const nome = document.getElementById("disparoImagemNome");
+  const btnBaixar = document.getElementById("btnBaixarImagemDisparo");
+
+  if (!arquivo) {
+    removerImagemDisparo();
+    return;
+  }
+  if (!arquivo.type || !arquivo.type.startsWith("image/")) {
+    alert("Selecione um arquivo de imagem válido.");
+    input.value = "";
+    removerImagemDisparo();
+    return;
+  }
+  if (arquivo.size > 12 * 1024 * 1024) {
+    alert("A imagem deve ter no máximo 12 MB.");
+    input.value = "";
+    removerImagemDisparo();
+    return;
+  }
+
+  arquivoImagemDisparo = arquivo;
+  if (urlImagemDisparo) URL.revokeObjectURL(urlImagemDisparo);
+  urlImagemDisparo = URL.createObjectURL(arquivo);
+  preview.src = urlImagemDisparo;
+  preview.style.display = "block";
+  nome.textContent = `Imagem selecionada: ${arquivo.name} (${(arquivo.size / 1024 / 1024).toFixed(2)} MB).`;
+  btnBaixar.style.display = "inline-flex";
+}
+
+function removerImagemDisparo() {
+  const input = document.getElementById("disparoImagem");
+  const preview = document.getElementById("disparoImagemPreview");
+  const nome = document.getElementById("disparoImagemNome");
+  const btnBaixar = document.getElementById("btnBaixarImagemDisparo");
+  arquivoImagemDisparo = null;
+  if (urlImagemDisparo) URL.revokeObjectURL(urlImagemDisparo);
+  urlImagemDisparo = null;
+  if (input) input.value = "";
+  if (preview) {
+    preview.removeAttribute("src");
+    preview.style.display = "none";
+  }
+  if (nome) nome.textContent = "Nenhuma imagem selecionada. Se não escolher uma imagem, o disparo funciona somente com texto.";
+  if (btnBaixar) btnBaixar.style.display = "none";
+}
+
+function baixarImagemDisparo() {
+  if (!arquivoImagemDisparo || !urlImagemDisparo) {
+    alert("Selecione uma imagem primeiro.");
+    return;
+  }
+  const link = document.createElement("a");
+  link.href = urlImagemDisparo;
+  link.download = arquivoImagemDisparo.name || "imagem-disparo";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
 function executarDisparoRapido() {
   const baseMsg = document.getElementById("disparoMensagemBase").value.trim();
   if (!baseMsg) {
@@ -2182,10 +2291,13 @@ function executarDisparoRapido() {
       abertas++;
     }
   });
+  const avisoImagem = arquivoImagemDisparo
+    ? "\\n\\nA imagem foi selecionada, mas o WhatsApp não permite anexá-la automaticamente por este link. Anexe o mesmo arquivo em cada conversa antes de enviar. Você pode usar o botão \\"Baixar imagem selecionada\\" para encontrá-la facilmente."
+    : "";
   if (abertas === contatos.length) {
-    alert(`${abertas} conversas abertas. Cada mensagem recebeu o nome correto. Confira e pressione Enviar em cada conversa do WhatsApp.`);
+    alert(`${abertas} conversas abertas. Cada mensagem recebeu o nome correto. Confira e pressione Enviar em cada conversa do WhatsApp.${avisoImagem}`);
   } else {
-    alert(`O navegador abriu ${abertas} de ${contatos.length} conversas. Permita pop-ups para este site e tente novamente. Pressione Enviar manualmente em cada conversa aberta.`);
+    alert(`O navegador abriu ${abertas} de ${contatos.length} conversas. Permita pop-ups para este site e tente novamente. Pressione Enviar manualmente em cada conversa aberta.${avisoImagem}`);
   }
 }
 
